@@ -1,11 +1,12 @@
 import { MikroORM } from "@mikro-orm/core";
 import { __prod__ } from "./constants";
-import { Post } from "./entities/Post";
 import microConfig from "./mikro-orm.config";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import { HelloResolver } from "./resolvers/hello";
+import { PostResolver } from "./resolvers/post";
+import "reflect-metadata";
 
 const main = async () => {
 	// init MikroORM, migrate data to postgresQL
@@ -17,9 +18,11 @@ const main = async () => {
 
 	const apolloServer = new ApolloServer({
 		schema: await buildSchema({
-			resolvers: [HelloResolver],
+			resolvers: [HelloResolver, PostResolver],
 			validate: false,
 		}),
+		// context is accessible by all the resolvers
+		context: () => ({ em: orm.em }),
 	});
 
 	// apply an graphQL endpoint to the server
