@@ -7,6 +7,7 @@ import { buildSchema } from "type-graphql";
 import { HelloResolver } from "./resolvers/hello";
 import { PostResolver } from "./resolvers/post";
 import "reflect-metadata";
+import { UserResolver } from "./resolvers/user";
 
 const main = async () => {
 	// init MikroORM, migrate data to postgresQL
@@ -18,7 +19,7 @@ const main = async () => {
 
 	const apolloServer = new ApolloServer({
 		schema: await buildSchema({
-			resolvers: [HelloResolver, PostResolver],
+			resolvers: [HelloResolver, PostResolver, UserResolver],
 			validate: false,
 		}),
 		// context is accessible by all the resolvers
