@@ -39,19 +39,43 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
-	@Mutation(() => User)
+	@Mutation(() => UserResponse)
 	async register(
 		@Arg("options") options: UsernamePasswordInput,
 		@Ctx() { em }: MyContext
 	) {
+		if (options.username.length <= 3) {
+			return {
+				errors: [
+					{
+						field: "username",
+						message: "username too short",
+					},
+				],
+			};
+		}
+		if (options.username.length <= 4) {
+			return {
+				errors: [
+					{
+						field: "password",
+						message: "password too short",
+					},
+				],
+			};
+		}
 		// hashing the password into something else! not reversable
 		const hashedPassword = await argon2.hash(options.password);
 		const user = em.create(User, {
 			username: options.username,
 			password: hashedPassword,
 		});
-		await em.persistAndFlush(user);
-		return user;
+		try {
+			await em.persistAndFlush(user);
+		} catch (err) {
+			console.log("message: ", err.message);
+		}
+		return { user };
 	}
 
 	@Mutation(() => UserResponse)
