@@ -11,6 +11,7 @@ import { UserResolver } from "./resolvers/user";
 import redis from "redis";
 import session from "express-session";
 import connectRedis from "connect-redis";
+import { MyContext } from "./types";
 
 const main = async () => {
 	// init MikroORM, migrate data to postgresQL
@@ -37,6 +38,7 @@ const main = async () => {
 				sameSite: "lax",
 				secure: __prod__, //cookie only works in https
 			},
+			saveUninitialized: false,
 			secret: "jkdshfgkjsfhg",
 			resave: false,
 		})
@@ -48,7 +50,7 @@ const main = async () => {
 			validate: false,
 		}),
 		// context is accessible by all the resolvers
-		context: () => ({ em: orm.em }),
+		context: ({ req, res }): MyContext => ({ em: orm.em, req, res }),
 	});
 
 	// apply an graphQL endpoint to the server
