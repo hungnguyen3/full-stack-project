@@ -80,7 +80,7 @@ let UserResolver = class UserResolver {
                     ],
                 };
             }
-            if (options.username.length <= 4) {
+            if (options.password.length <= 4) {
                 return {
                     errors: [
                         {
@@ -99,7 +99,17 @@ let UserResolver = class UserResolver {
                 yield em.persistAndFlush(user);
             }
             catch (err) {
-                console.log("message: ", err.message);
+                console.log("code: ", err);
+                if (err.code === "23505" || err.detail.includes("already exists")) {
+                    return {
+                        errors: [
+                            {
+                                field: "username",
+                                message: "username already exists",
+                            },
+                        ],
+                    };
+                }
             }
             return { user };
         });

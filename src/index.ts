@@ -8,6 +8,9 @@ import { HelloResolver } from "./resolvers/hello";
 import { PostResolver } from "./resolvers/post";
 import "reflect-metadata";
 import { UserResolver } from "./resolvers/user";
+import redis from "redis";
+import session from "express-session";
+import connectRedis from "connect-redis";
 
 const main = async () => {
 	// init MikroORM, migrate data to postgresQL
@@ -16,6 +19,28 @@ const main = async () => {
 
 	// req and res to the server
 	const app = express();
+
+	// set up cookie using redis server
+	const RedisStore = connectRedis(session);
+	const redisClient = redis.createClient();
+
+	app.use(
+		session({
+			name: "crazhung",
+			store: new RedisStore({
+				client: redisClient,
+				disableTouch: true,
+			}),
+			cookie: {
+				maxAge: 1000 * 60 * 60 * 24 * 365 * 10, //10 years
+				httpOnly: true,
+				sameSite: "lax",
+				secure: __prod__, //cookie only works in https
+			},
+			secret: "jkdshfgkjsfhg",
+			resave: false,
+		})
+	);
 
 	const apolloServer = new ApolloServer({
 		schema: await buildSchema({
